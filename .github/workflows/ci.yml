@@ -61,11 +61,10 @@ jobs:
         uses: psf/black@stable
         with:
           options: "--check --verbose"
-          src: "./backend"
           
       - name: Lint with pylint
         run: |
-          pylint ./backend
+          pylint .
           
       - name: Test with pytest
         run: |
