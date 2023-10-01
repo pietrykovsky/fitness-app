@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  frontend:
+    volumes:
+      - ./frontend:/app/frontend
+
+  backend:
+    volumes:
+      - ./backend:/app/backend

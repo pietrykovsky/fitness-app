@@ -1,0 +1,17 @@
+# Use the official Python image from DockerHub
+FROM python:3.11-alpine
+
+# Set the working directory inside the container
+WORKDIR /app/backend
+
+# Depending on the ARG value, copy the appropriate requirements file
+COPY ./requirements${DEV:+-dev}.txt ./requirements.txt
+
+# Install Python dependencies
+RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
+
+# Copy the content of the backend directory to the working directory
+COPY ./ ./
+
+# Command to run the application using Uvicorn
+CMD if [ "$DEV" = "true" ] ; then uvicorn main:app --host 0.0.0.0 --port 8000 --reload ; else uvicorn main:app --host 0.0.0.0 --port 8000 ; fi
