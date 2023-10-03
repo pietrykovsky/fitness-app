@@ -14,7 +14,4 @@ RUN npm ci
 COPY ./ ./
 
 # If DEV is false, create a production build
-CMD if [ "$DEV" = "false" ] ; then npm run build && npm install -g serve && serve -s build ; fi
-
-# If DEV=true, we'll run the React development server
-CMD if [ "$DEV" = "true" ] ; then npm start ; fi
+CMD npm run build && npm install -g serve && serve -s build

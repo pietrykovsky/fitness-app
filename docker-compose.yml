@@ -5,31 +5,32 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    environment:
-      - HOST=${HOST}
-      - DEV=${DEV}
+    env_file:
+      - .env
     networks:
       - app-network
     ports:
       - "3000:3000"
+    depends_on:
+      - backend
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    environment:
-      - DEV=${DEV}
+    env_file:
+      - .env
     networks:
       - app-network
     ports:
       - "8000:8000"
+    depends_on:
+      - database
 
   database:
     image: postgres:16-alpine
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
+    env_file:
+      - .env
     networks:
       - app-network
     volumes:
