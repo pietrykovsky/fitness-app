@@ -3,9 +3,9 @@ from shutil import which
 import argparse
 
 
-PROD_RUN = "docker compose -f docker-compose.yml up --build"
+PROD_RUN = "docker-compose -f docker-compose.yml up --build"
 DEV_RUN = (
-    "docker compose -f docker-compose.yml -f docker-compose.override.yml up --build"
+    "docker-compose -f docker-compose.yml -f docker-compose.override.yml up --build"
 )
 
 

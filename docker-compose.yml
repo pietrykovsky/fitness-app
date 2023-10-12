@@ -11,6 +11,8 @@ services:
       - app-network
     ports:
       - "3000:3000"
+    volumes:
+      - static_volume:/code/frontend/build
     depends_on:
       - backend
 
@@ -24,6 +26,8 @@ services:
       - app-network
     ports:
       - "8000:8000"
+    volumes:
+      - ./backend/app:/code/backend/app
     depends_on:
       - database
 
@@ -42,3 +46,4 @@ networks:
 
 volumes:
   pgdata:
+  static_volume:
