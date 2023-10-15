@@ -12,6 +12,10 @@ RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
 # Copy the content of the backend directory to the working directory
 COPY ./app /code/backend/app
+COPY ./alembic.ini /code/backend/alembic.ini
+COPY ./alembic /code/backend/alembic
+COPY ./start.sh /code/backend/start.sh
+COPY ./wait_for_db.py /code/backend/wait_for_db.py
 
 # Command to run the application using Uvicorn
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD /code/backend/start.sh
