@@ -17,5 +17,7 @@ COPY ./alembic /code/backend/alembic
 COPY ./start.sh /code/backend/start.sh
 COPY ./wait_for_db.py /code/backend/wait_for_db.py
 
+RUN chmod +x /code/backend/start.sh
+
 # Command to run the application using Uvicorn
 CMD /code/backend/start.sh
