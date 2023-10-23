@@ -2,8 +2,7 @@ from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
 
 from app.crud import item as item_crud, user as user_crud
-from app import models, schemas
-from app.core.database import engine
+from app import schemas
 from app.core.deps import get_db
 
 
@@ -34,9 +33,9 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
 
 @app.post("/users/{user_id}/items/", response_model=schemas.Item)
 def create_item_for_user(
-    user_id: int, item: schemas.ItemCreate, db: Session = Depends(get_db)
+    user_id: int, item_data: schemas.ItemCreate, db: Session = Depends(get_db)
 ):
-    return item_crud.create(db=db, item=item, user_id=user_id)
+    return item_crud.create(db=db, item_data=item_data, user_id=user_id)
 
 
 @app.get("/items/", response_model=list[schemas.Item])
