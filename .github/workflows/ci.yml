@@ -58,9 +58,8 @@ jobs:
           if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
           
       - name: Format with black
-        uses: psf/black@stable
-        with:
-          options: "--check --verbose"
+        run: |
+          black --check --verbose app
           
       - name: Lint with pylint
         run: |
