@@ -65,7 +65,7 @@ class CRUDBase[ModelType, CreateSchemaType, UpdateSchemaType]:
         db: Session,
         *,
         db_obj: ModelType,
-        obj_in: UpdateSchemaType | dict[str, Any]
+        obj_in: UpdateSchemaType | dict[str, Any],
     ) -> ModelType:
         """
         Update an existing record in the database.
