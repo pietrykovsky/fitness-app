@@ -14,3 +14,4 @@ services:
       dockerfile: Dockerfile.dev
     volumes:
       - ./backend/app:/code/backend/app
+      - ./backend/alembic:/code/backend/alembic
