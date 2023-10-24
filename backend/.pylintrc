@@ -429,6 +429,7 @@ disable=raw-checker-failed,
         useless-suppression,
         deprecated-pragma,
         no-self-argument,
+        not-callable,
         use-symbolic-message-instead,
         use-implicit-booleaness-not-comparison-to-string,
         use-implicit-booleaness-not-comparison-to-zero,
@@ -437,6 +438,7 @@ disable=raw-checker-failed,
         C0116,
         R0903,
         E1136,
+        W0613,
 
 
 # Enable the message, report, category or checker with the given id(s). You can

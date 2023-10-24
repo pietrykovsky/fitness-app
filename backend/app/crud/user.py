@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 from sqlalchemy.orm import Session
 
@@ -23,7 +23,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         return db_obj
 
     def update(
-        self, db: Session, *, db_obj: User, obj_in: Union[UserUpdate, Dict[str, Any]]
+        self, db: Session, *, db_obj: User, obj_in: UserUpdate | dict[str, Any]
     ) -> User:
         if isinstance(obj_in, dict):
             update_data = obj_in
@@ -35,13 +35,13 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             update_data["password"] = hashed_password
         return super().update(db, db_obj=db_obj, obj_in=update_data)
 
-    def authenticate(self, db: Session, *, email: str, password: str) -> Optional[User]:
-        user = self.get(db, email=email)
-        if not user:
+    def authenticate(self, db: Session, *, email: str, password: str) -> User | None:
+        user_instance = self.get(db, email=email)
+        if not user_instance:
             return None
-        if not verify_password(password, user.password):
+        if not verify_password(password, user_instance.password):
             return None
-        return user
+        return user_instance
 
 
 user = CRUDUser(User)

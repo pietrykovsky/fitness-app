@@ -6,7 +6,7 @@ from pydantic.networks import EmailStr
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
-from app.core import deps, settings
+from app.core import deps
 
 router = APIRouter()
 

@@ -34,11 +34,11 @@ def get_current_user(
             token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
         )
         token_data = TokenPayload(**payload)
-    except (jwt.JWTError, ValidationError):
+    except (jwt.JWTError, ValidationError) as exc:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Could not validate credentials",
-        )
+        ) from exc
     user = user_crud.get(db, id=token_data.sub)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
