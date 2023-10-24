@@ -1,6 +1,14 @@
 # Use the official Python image from DockerHub
 FROM python:3.12-alpine
 
+# Install the dependencies required to build the Python packages
+RUN apk update && apk add --no-cache \
+    build-base \
+    libffi-dev \
+    openssl-dev \
+    rust \
+    cargo
+
 # Set the working directory inside the container
 WORKDIR /code/backend
 
