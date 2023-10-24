@@ -31,5 +31,5 @@ class UserInDB(UserBase):
     id: int | None = None
     create_date: datetime | None = None
 
-    class Config:
-        orm_mode = True
+    class ConfigDict:
+        from_attributes = True

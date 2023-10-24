@@ -1,8 +1,8 @@
 from typing import Any
 
 from sqlalchemy import create_engine, URL
-from sqlalchemy.ext.declarative import as_declarative, declared_attr
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.orm import sessionmaker, as_declarative
 
 from app.core import settings
 
