@@ -1,33 +1,69 @@
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
+from sqlalchemy.orm import sessionmaker
 
+from app.main import app as base_app
 from app.core.deps import get_db
 from app.core.database import Base
-from app.main import app
-
-SQLALCHEMY_DATABASE_URL = "sqlite://"
-
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL,
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
-)
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+from app.tests import env
 
 
-Base.metadata.create_all(bind=engine)
+@pytest.fixture(scope="session")
+def db_engine_session():
+    """Provide a test engine and session for the test session."""
+    engine = create_engine(
+        env.SQLALCHEMY_DATABASE_URL,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    TestingSessionLocal = sessionmaker(bind=engine)
+    return engine, TestingSessionLocal
 
 
-def override_get_db():
+@pytest.fixture(scope="function", autouse=True)
+def setup_database(db_engine_session):
+    """Set up and tear down the test database."""
+    engine, _ = db_engine_session
+    Base.metadata.create_all(bind=engine)
+    yield
+    Base.metadata.drop_all(bind=engine)
+
+
+@pytest.fixture(scope="function")
+def db_session(db_engine_session):
+    """Provide a test database session for CRUD operations."""
+    _, TestingSessionLocal = db_engine_session
+    session = TestingSessionLocal()
     try:
-        db = TestingSessionLocal()
-        yield db
+        yield session
     finally:
-        db.close()
+        session.close()
 
 
-app.dependency_overrides[get_db] = override_get_db
+@pytest.fixture(scope="function", autouse=True)
+def override_get_db(db_engine_session):
+    """Override the get_db dependency to use the test database."""
+    _, TestingSessionLocal = db_engine_session
 
-client = TestClient(app)
+    def _get_db_override():
+        with TestingSessionLocal() as db:
+            yield db
+
+    base_app.dependency_overrides[get_db] = _get_db_override
+    yield
+    base_app.dependency_overrides.pop(get_db, None)
+
+
+@pytest.fixture(scope="session")
+def app():
+    """Provide the FastAPI app instance."""
+    return base_app
+
+
+@pytest.fixture(scope="session")
+def client(app):
+    """Provide a test client for FastAPI using the provided app instance."""
+    with TestClient(app) as c:
+        yield c
