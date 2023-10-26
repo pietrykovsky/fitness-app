@@ -10,9 +10,10 @@ from app.schemas import UserCreate, UserUpdate
 
 class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
     def create(self, db: Session, *, obj_in: UserCreate) -> User:
+        hashed_password = get_password_hash(obj_in.password)
         db_obj = User(
             email=obj_in.email,
-            password=get_password_hash(obj_in.password),
+            password=hashed_password,
             first_name=obj_in.first_name,
             last_name=obj_in.last_name,
             is_superuser=obj_in.is_superuser,
