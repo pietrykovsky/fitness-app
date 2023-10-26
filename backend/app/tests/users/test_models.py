@@ -1,21 +1,17 @@
 import pytest
+from sqlalchemy.orm import Session
 
 from app.models import User
 from app.tests import const
 
 
-@pytest.fixture(scope="function")
-def create_user_model(request, db_session):
-    user = User(**request.param)
-    db_session.add(user)
-    db_session.commit()
-    db_session.refresh(user)
-    return user, request.param
+def assert_user_properties(user: User, expected: dict) -> None:
+    """
+    Assert the properties of a user model against an expected dictionary.
 
-
-@pytest.mark.parametrize("create_user_model", const.SAMPLE_USER_DATA, indirect=True)
-def test_create_user_success(create_user_model):
-    user, expected = create_user_model
+    :param user: The user instance to check.
+    :param expected: The dictionary with expected values.
+    """
     assert user.id is not None
     assert user.email == expected["email"]
     assert user.first_name == expected["first_name"]
@@ -26,40 +22,127 @@ def test_create_user_success(create_user_model):
     assert user.create_date is not None
 
 
-@pytest.mark.parametrize("create_user_model", const.SAMPLE_USER_DATA, indirect=True)
-def test_get_user_success(create_user_model, db_session):
+def add_user_to_db(db_session: Session, user_data: dict) -> User:
+    """
+    Add a user instance to the database and return it.
+
+    :param db_session: The database session to use for adding the user.
+    :param user_data: The data for the user to be added.
+    :return: The added user instance.
+    """
+    user = User(**user_data)
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    return user
+
+
+@pytest.fixture(scope="function")
+def create_user_model(
+    request: pytest.FixtureRequest, db_session: Session
+) -> tuple[User, dict]:
+    """
+    Create a user model using the provided request parameters and return the user and its data.
+
+    :param request: The pytest request object with test parameters.
+    :param db_session: The database session.
+    :return: A tuple containing the user model and its data.
+    """
+    user = add_user_to_db(db_session, request.param)
+    return user, request.param
+
+
+@pytest.mark.parametrize("create_user_model", const.SAMPLE_USER_DATA[:1], indirect=True)
+def test_create_user_success(create_user_model: tuple[User, dict]):
+    """
+    Test successful creation of a user.
+
+    Requirements:
+        - User data is passed as a parameter.
+
+    Steps:
+        1. Create a user with the provided data.
+        2. Assert properties of the user against the provided data.
+
+    Pass criteria:
+        User properties match the provided data.
+    """
+    user, expected = create_user_model
+    assert_user_properties(user, expected)
+
+
+@pytest.mark.parametrize("create_user_model", const.SAMPLE_USER_DATA[:1], indirect=True)
+def test_get_user_success(create_user_model: tuple[User, dict], db_session: Session):
+    """
+    Test successful retrieval of a user from the database.
+
+    Requirements:
+        - User is previously created in the database.
+
+    Steps:
+        1. Retrieve a user with the known ID from the database.
+        2. Assert properties of the retrieved user against the known data.
+
+    Pass criteria:
+        - User properties match the known data.
+    """
     user, expected = create_user_model
     assert user is not None
 
     user = db_session.query(User).filter(User.id == user.id).first()
-    assert user is not None
-    assert user.id is not None
-    assert user.email == expected["email"]
-    assert user.first_name == expected["first_name"]
-    assert user.last_name == expected["last_name"]
-    assert user.password == expected["password"]
-    assert user.is_superuser is False
-    assert user.is_active is True
-    assert user.create_date is not None
+    assert_user_properties(user, expected)
 
 
-@pytest.mark.parametrize("create_user_model", const.SAMPLE_USER_DATA, indirect=True)
-def test_update_user_success(create_user_model, db_session):
-    new_password = "new_password"
+@pytest.mark.parametrize("create_user_model", const.SAMPLE_USER_DATA[:1], indirect=True)
+def test_update_user_success(create_user_model: tuple[User, dict], db_session: Session):
+    """
+    Test successful update of a user's properties.
+
+    Requirements:
+        - User is previously created in the database.
+
+    Steps:
+        1. Update known properties of the user.
+        2. Persist the changes to the database.
+        3. Assert updated properties of the user.
+
+    Pass criteria:
+        - Updated user properties match the new data.
+    """
+    NEW_PASSWORD = "new_password"
+    NEW_LAST_NAME = "new_last_name"
 
     user, expected = create_user_model
     assert user is not None
     assert user.password == expected["password"]
+    assert user.last_name == expected["last_name"]
 
-    user.password = new_password
+    expected["password"] = NEW_PASSWORD
+    expected["last_name"] = NEW_LAST_NAME
+
+    user.password = NEW_PASSWORD
+    user.last_name = NEW_LAST_NAME
     db_session.commit()
     db_session.refresh(user)
 
-    assert user.password == new_password
+    assert_user_properties(user, expected)
 
 
-@pytest.mark.parametrize("create_user_model", const.SAMPLE_USER_DATA, indirect=True)
-def test_delete_user_success(create_user_model, db_session):
+@pytest.mark.parametrize("create_user_model", const.SAMPLE_USER_DATA[:1], indirect=True)
+def test_delete_user_success(create_user_model: tuple[User, dict], db_session: Session):
+    """
+    Test successful deletion of a user from the database.
+
+    Requirements:
+        - User is previously created in the database.
+
+    Steps:
+        1. Delete the user from the database.
+        2. Try to retrieve the user by its ID.
+
+    Pass criteria:
+        - User is not found in the database.
+    """
     user, _ = create_user_model
     assert user.id is not None
     assert user.email is not None
@@ -69,3 +152,61 @@ def test_delete_user_success(create_user_model, db_session):
 
     user = db_session.query(User).filter(User.id == user.id).first()
     assert user is None
+
+
+def test_create_and_retrieve_multiple_users_success(db_session: Session):
+    """
+    Test successful creation and retrieval of multiple users.
+
+    Requirements:
+        - List of user data is provided.
+
+    Steps:
+        1. For each user data, create a user and persist in the database.
+        2. For each known user data, retrieve a user by its email and assert its properties.
+
+    Pass criteria:
+        - All created users are successfully retrieved and their properties match the known data.
+    """
+    for user_data in const.SAMPLE_USER_DATA:
+        user = add_user_to_db(db_session, user_data)
+
+        retrieved_user = (
+            db_session.query(User).filter(User.email == user_data["email"]).first()
+        )
+        assert retrieved_user is not None
+
+    users = db_session.query(User).all()
+    assert len(users) == len(const.SAMPLE_USER_DATA)
+    for user in users:
+        assert_user_properties(user, const.SAMPLE_USER_DATA[user.id - 1])
+
+
+def test_add_user_with_the_same_email_fails(db_session: Session):
+    """
+    Test the attempt to add a user with an email that already exists in the database.
+
+    Requirements:
+        - A user is previously added to the database.
+        - An attempt is made to add another user with the same email.
+
+    Steps:
+        1. Add a user to the database using the first sample data.
+        2. Create another user instance with the same email (from the sample data).
+        3. Try to add this user to the database and commit the changes.
+
+    Expected result:
+        An exception is raised due to the unique email constraint.
+
+    Pass criteria:
+        The raised exception message contains "UNIQUE constraint failed: user.email".
+    """
+    user_data = const.SAMPLE_USER_DATA[0]
+    user = add_user_to_db(db_session, user_data)
+    assert user is not None
+
+    user = User(**user_data)
+    db_session.add(user)
+    with pytest.raises(Exception) as excinfo:
+        db_session.commit()
+    assert "UNIQUE constraint failed: user.email" in str(excinfo.value)
