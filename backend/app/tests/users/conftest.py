@@ -1,8 +1,10 @@
 import pytest
+from fastapi import FastAPI
 from sqlalchemy.orm import Session
 
 from app.models import User
 from app.tests.utils import add_user_to_db
+from app.core.deps import get_current_user
 
 
 @pytest.fixture(scope="function")
@@ -18,3 +20,24 @@ def create_user_model(
     """
     user = add_user_to_db(db_session, request.param)
     return user, request.param
+
+
+@pytest.fixture(scope="function")
+def override_get_current_user(create_user_model, app: FastAPI):
+    """Override the get_db dependency to use the test database."""
+    user, _ = create_user_model
+
+    def _get_current_user_override():
+        return user
+
+    app.dependency_overrides[get_current_user] = _get_current_user_override
+    yield user
+    app.dependency_overrides.pop(get_current_user, None)
+
+
+@pytest.fixture(scope="function")
+def get_current_superuser(override_get_current_user, db_session):
+    override_get_current_user.is_superuser = True
+    db_session.commit()
+    db_session.refresh(override_get_current_user)
+    return override_get_current_user
