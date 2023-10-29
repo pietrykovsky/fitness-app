@@ -1,5 +1,11 @@
+from app.core import settings
+
+
 # endpoints
-USER_CREATE_OPEN_URL = "api/users/open"
+USER_URL = f"{settings.API_STR}/users"
+USER_ME_URL = f"{USER_URL}/me"
+USER_CREATE_OPEN_URL = f"{USER_URL}/open"
+
 
 # test data
 SAMPLE_USER_DATA = (

@@ -1,6 +1,29 @@
+from typing import Any
 from sqlalchemy.orm import Session
 
 from app.models import User
+
+
+def assert_properties(actual: dict | Any, expected: dict | Any):
+    """
+    Assert the properties of an object against an expected dictionary.
+
+    :param actual: The actual object to check.
+    :param expected: The dictionary with expected values.
+    """
+    actual_dict = vars(actual) if not isinstance(actual, dict) else actual
+    expected_dict = vars(expected) if not isinstance(expected, dict) else expected
+
+    expected_attrs = [
+        key
+        for key in expected_dict
+        if not callable(getattr(expected, key)) and not key.startswith("_")
+    ]
+    for key in expected_attrs:
+        assert key in actual_dict, f"Attribute '{key}' not found in actual object"
+        assert getattr(actual, key) == getattr(
+            expected, key
+        ), f"Value for attribute '{key}' does not match. Expected: '{getattr(expected, key)}', Got: '{getattr(actual, key)}'"
 
 
 def assert_user_properties(user: User, expected: dict):

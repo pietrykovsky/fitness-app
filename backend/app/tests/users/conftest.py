@@ -14,7 +14,7 @@ def create_user_model(
 
     :param request: The pytest request object with test parameters.
     :param db_session: The database session.
-    :return: A tuple containing the user model and its data.
+    :return: A tuple containing the user model and its expected data.
     """
     user = add_user_to_db(db_session, request.param)
     return user, request.param

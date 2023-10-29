@@ -57,6 +57,7 @@ def update_user_me(
     """
     Update own user.
     """
+    current_user = crud.user.get(db, id=current_user.id)
     current_user_data = jsonable_encoder(current_user)
     user_in = schemas.UserUpdate(**current_user_data)
     if password is not None:
