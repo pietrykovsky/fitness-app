@@ -21,10 +21,7 @@ def test_login_access_token(client, db_session):
     """
     user_data = const.SAMPLE_USER_DATA[0]
     user_crud.create(db=db_session, obj_in=UserCreate(**user_data))
-    payload = {
-        "username": user_data["email"],
-        "password": user_data["password"]
-    }
+    payload = {"username": user_data["email"], "password": user_data["password"]}
     response = client.post(const.LOGIN_URL, data=payload)
     assert response.status_code == 200, response.text
     data = response.json()
