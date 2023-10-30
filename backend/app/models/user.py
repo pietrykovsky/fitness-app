@@ -14,3 +14,6 @@ class User(Base):
     is_active: Mapped[bool] = True
     is_superuser: Mapped[bool] = False
     create_date: Mapped[datetime] = mapped_column(server_default=func.now())
+
+    def __repr__(self) -> str:
+        return f"<User: {self.email}>"
