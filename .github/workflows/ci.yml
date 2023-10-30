@@ -67,4 +67,4 @@ jobs:
           
       - name: Test with pytest
         run: |
-          pytest app/tests
+          pytest -v --log-cli-level=DEBUG app/tests

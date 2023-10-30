@@ -1,7 +1,11 @@
+import logging
 from typing import Any
 from sqlalchemy.orm import Session
 
 from app.models import User
+
+
+LOG = logging.getLogger(__name__)
 
 
 def assert_properties(actual: dict | Any, expected: dict | Any):
@@ -55,4 +59,5 @@ def add_user_to_db(db_session: Session, user_data: dict) -> User:
     db_session.add(user)
     db_session.commit()
     db_session.refresh(user)
+    LOG.debug(f"Added user to database: {user}")
     return user

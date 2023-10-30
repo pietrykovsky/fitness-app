@@ -149,9 +149,6 @@ def test_add_user_with_the_same_email_fails(db_session: Session):
         2. Create another user instance with the same email (from the sample data).
         3. Try to add this user to the database and commit the changes.
 
-    Expected result:
-        An exception is raised due to the unique email constraint.
-
     Pass criteria:
         The raised exception message contains "UNIQUE constraint failed: user.email".
     """

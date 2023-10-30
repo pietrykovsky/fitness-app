@@ -16,6 +16,6 @@ DB_PORT = os.getenv("POSTGRES_PORT")
 
 
 # security
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = os.getenv("SECRET_KEY", "secret")
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
 ALGORITHM = "HS256"
