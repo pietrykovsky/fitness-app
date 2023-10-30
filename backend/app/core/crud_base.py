@@ -3,6 +3,7 @@ from typing import Any
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.expression import select
 
 from app.core.database import Base
 
@@ -30,7 +31,7 @@ class CRUDBase[ModelType, CreateSchemaType, UpdateSchemaType]:
         :param kwargs: Keyword arguments to filter the record.
         :return: Retrieved record or None if not found.
         """
-        return db.query(self.model).filter_by(**kwargs).first()
+        return db.execute(select(self.model).filter_by(**kwargs)).scalar_one_or_none()
 
     def get_multi(
         self, db: Session, *, skip: int = 0, limit: int = 100
@@ -43,7 +44,7 @@ class CRUDBase[ModelType, CreateSchemaType, UpdateSchemaType]:
         :param limit: Maximum number of records to retrieve.
         :return: List of retrieved records.
         """
-        return db.query(self.model).offset(skip).limit(limit).all()
+        return db.execute(select(self.model).offset(skip).limit(limit)).scalars().all()
 
     def create(self, db: Session, *, obj_in: CreateSchemaType) -> ModelType:
         """

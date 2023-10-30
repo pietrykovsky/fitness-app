@@ -2,7 +2,7 @@ from typing import Any
 
 from sqlalchemy import create_engine, URL
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import sessionmaker, as_declarative
+from sqlalchemy.orm import sessionmaker, DeclarativeBase
 
 from app.core import settings
 
@@ -20,8 +20,7 @@ engine = create_engine(DB_URL, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
-@as_declarative()
-class Base:
+class Base(DeclarativeBase):
     id: Any
     __name__: str
 

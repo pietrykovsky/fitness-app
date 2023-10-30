@@ -1,6 +1,7 @@
 import pytest
 import logging
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.expression import select
 
 from app.models import User
 from app.tests import const
@@ -47,7 +48,7 @@ def test_get_user_success(create_user_model: tuple[User, dict], db_session: Sess
     user, expected = create_user_model
     assert user is not None, "User should not be None!"
 
-    user = db_session.query(User).filter(User.id == user.id).first()
+    user = db_session.execute(select(User).filter(User.id == user.id)).scalar_one()
     assert_user_properties(user, expected)
 
 
@@ -115,7 +116,9 @@ def test_delete_user_success(create_user_model: tuple[User, dict], db_session: S
     db_session.commit()
     LOG.debug(f"Deleted user with ID: {user.id}")
 
-    user = db_session.query(User).filter(User.id == user.id).first()
+    user = db_session.execute(
+        select(User).filter(User.id == user.id)
+    ).scalar_one_or_none()
     assert user is None, f"User with ID {user.id} should not be found in the database!"
 
 
@@ -136,9 +139,9 @@ def test_create_and_retrieve_multiple_users_success(db_session: Session):
     for user_data in const.SAMPLE_USER_DATA:
         user = add_user_to_db(db_session, user_data)
 
-        retrieved_user = (
-            db_session.query(User).filter(User.email == user_data["email"]).first()
-        )
+        retrieved_user = db_session.execute(
+            select(User).filter(User.email == user_data["email"])
+        ).scalar_one_or_none()
         assert retrieved_user is not None
 
     users = db_session.query(User).all()
