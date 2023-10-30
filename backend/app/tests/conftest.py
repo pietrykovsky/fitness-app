@@ -76,7 +76,7 @@ def app() -> FastAPI:
 
 
 @pytest.fixture(scope="session")
-def client(app: base_app) -> TestClient:
+def client(app: FastAPI) -> TestClient:
     """Provide a test client for FastAPI using the provided app instance."""
     with TestClient(app) as c:
         yield c

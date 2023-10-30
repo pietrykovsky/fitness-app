@@ -1,14 +1,20 @@
 import pytest
+import logging
+from sqlalchemy.orm import Session
 
 from app.crud import user as user_crud
+from app.models import User
 from app.schemas import UserCreate
 from app.tests import const
 from app.tests.utils import assert_user_properties, add_user_to_db
 from app.core.security import verify_password
 
 
+LOG = logging.getLogger(__name__)
+
+
 @pytest.mark.parametrize("create_user_model", const.SAMPLE_USER_DATA[:1], indirect=True)
-def test_get_user_by_id(create_user_model, db_session):
+def test_get_user_by_id(create_user_model: tuple[User, dict], db_session: Session):
     """
     Test retrieving a user by its ID.
 
@@ -24,10 +30,11 @@ def test_get_user_by_id(create_user_model, db_session):
     """
     user, expected = create_user_model
     retrieved_user = user_crud.get(db_session, id=user.id)
+    LOG.debug(f"Retrieved user: id={retrieved_user.id}, email={retrieved_user.email}")
     assert_user_properties(retrieved_user, expected)
 
 
-def test_create_user(db_session):
+def test_create_user(db_session: Session):
     """
     Test creating a new user.
 
@@ -43,17 +50,26 @@ def test_create_user(db_session):
     """
     user_data = const.SAMPLE_USER_DATA[0]
     user = user_crud.create(db_session, obj_in=UserCreate(**user_data))
+    LOG.debug(f"Created user with data: {user_data}")
 
-    assert user.email == user_data["email"]
-    assert user.first_name == user_data["first_name"]
-    assert user.last_name == user_data["last_name"]
-    assert verify_password(user_data["password"], user.password)
-    assert user.is_superuser is False
-    assert user.is_active is True
+    assert (
+        user.email == user_data["email"]
+    ), f"Actual email \"{user.email}\" does not match expected \"{user_data['email']}\""
+    assert (
+        user.first_name == user_data["first_name"]
+    ), f"Actual first name \"{user.first_name}\" does not match expected \"{user_data['first_name']}\""
+    assert (
+        user.last_name == user_data["last_name"]
+    ), f"Actual last name \"{user.last_name}\" does not match expected \"{user_data['last_name']}\""
+    assert verify_password(
+        user_data["password"], user.password
+    ), f"Could not verified password \"{user_data['password']}\""
+    assert user.is_superuser is False, "User should not be a superuser by default!"
+    assert user.is_active is True, "User should be active by default!"
 
 
 @pytest.mark.parametrize("create_user_model", const.SAMPLE_USER_DATA[:1], indirect=True)
-def test_update_user(create_user_model, db_session):
+def test_update_user(create_user_model: tuple[User, dict], db_session: Session):
     """
     Test updating a user's properties.
 
@@ -74,13 +90,18 @@ def test_update_user(create_user_model, db_session):
     user, _ = create_user_model
     update_data = {"email": NEW_EMAIL, "first_name": NEW_FIRST_NAME}
     updated_user = user_crud.update(db_session, db_obj=user, obj_in=update_data)
+    LOG.debug(f"Updated user with data: {update_data}")
 
-    assert updated_user.email == NEW_EMAIL
-    assert updated_user.first_name == NEW_FIRST_NAME
+    assert (
+        updated_user.email == NEW_EMAIL
+    ), f'Actual email "{updated_user.email}" does not match expected "{NEW_EMAIL}"'
+    assert (
+        updated_user.first_name == NEW_FIRST_NAME
+    ), f'Actual first name "{updated_user.first_name}" does not match expected "{NEW_FIRST_NAME}"'
 
 
 @pytest.mark.parametrize("create_user_model", const.SAMPLE_USER_DATA[:1], indirect=True)
-def test_delete_user(create_user_model, db_session):
+def test_delete_user(create_user_model: tuple[User, dict], db_session: Session):
     """
     Test deleting a user.
 
@@ -96,12 +117,15 @@ def test_delete_user(create_user_model, db_session):
     """
     user, _ = create_user_model
     user_crud.remove(db_session, id=user.id)
+    LOG.debug(f"Deleted user with ID: {user.id}")
     user_after_delete = user_crud.get(db_session, id=user.id)
-    assert user_after_delete is None
+    assert (
+        user_after_delete is None
+    ), f"User with ID {user.id} should not be found in the database!"
 
 
 @pytest.mark.parametrize("create_user_model", const.SAMPLE_USER_DATA[:1], indirect=True)
-def test_get_user_by_email(create_user_model, db_session):
+def test_get_user_by_email(create_user_model: tuple[User, dict], db_session: Session):
     """
     Test retrieving a user by its email.
 
@@ -117,10 +141,11 @@ def test_get_user_by_email(create_user_model, db_session):
     """
     _, expected = create_user_model
     retrieved_user = user_crud.get(db_session, email=expected["email"])
+    LOG.debug(f"Retrieved user: id={retrieved_user.id}, email={retrieved_user.email}")
     assert_user_properties(retrieved_user, expected)
 
 
-def test_authenticate_user(db_session):
+def test_authenticate_user(db_session: Session):
     """
     Test authenticating a user.
 
@@ -136,14 +161,17 @@ def test_authenticate_user(db_session):
     """
     expected = const.SAMPLE_USER_DATA[0]
     user_crud.create(db_session, obj_in=UserCreate(**expected))
+    LOG.debug(f"Created user with data: {expected}")
     user = user_crud.authenticate(
         db_session, email=expected["email"], password=expected["password"]
     )
-    assert user is not None
-    assert user.email == expected["email"]
+    assert user is not None, f"User not found in database: {expected}"
+    assert (
+        user.email == expected["email"]
+    ), f"Actual email \"{user.email}\" does not match expected \"{expected['email']}\""
 
 
-def test_get_all_users(db_session):
+def test_get_all_users(db_session: Session):
     """
     Test retrieving all users.
 
@@ -161,4 +189,8 @@ def test_get_all_users(db_session):
     for user_data in const.SAMPLE_USER_DATA:
         add_user_to_db(db_session, user_data)
     users = user_crud.get_multi(db_session)
-    assert len(users) == len(const.SAMPLE_USER_DATA)
+    LOG.debug(f"Retrieved {len(users)} users from database.")
+    LOG.debug(f"Users: {users}")
+    assert len(users) == len(
+        const.SAMPLE_USER_DATA
+    ), f"Actual number of users {len(users)} does not match expected {len(const.SAMPLE_USER_DATA)}"

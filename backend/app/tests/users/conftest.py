@@ -27,7 +27,9 @@ def create_user_model(
 
 
 @pytest.fixture(scope="function")
-def override_get_current_user(create_user_model, app: FastAPI):
+def override_get_current_user(
+    create_user_model: tuple[User, dict], app: FastAPI
+) -> User:
     """Override the get_db dependency to use the test database."""
     user, _ = create_user_model
 
@@ -42,7 +44,7 @@ def override_get_current_user(create_user_model, app: FastAPI):
 
 
 @pytest.fixture(scope="function")
-def get_current_superuser(override_get_current_user, db_session):
+def get_current_superuser(override_get_current_user: User, db_session: Session) -> User:
     override_get_current_user.is_superuser = True
     db_session.commit()
     db_session.refresh(override_get_current_user)

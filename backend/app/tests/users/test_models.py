@@ -1,9 +1,13 @@
 import pytest
+import logging
 from sqlalchemy.orm import Session
 
 from app.models import User
 from app.tests import const
 from app.tests.utils import assert_user_properties, add_user_to_db
+
+
+LOG = logging.getLogger(__name__)
 
 
 @pytest.mark.parametrize("create_user_model", const.SAMPLE_USER_DATA[:1], indirect=True)
@@ -41,7 +45,7 @@ def test_get_user_success(create_user_model: tuple[User, dict], db_session: Sess
         - User properties match the known data.
     """
     user, expected = create_user_model
-    assert user is not None
+    assert user is not None, "User should not be None!"
 
     user = db_session.query(User).filter(User.id == user.id).first()
     assert_user_properties(user, expected)
@@ -67,17 +71,23 @@ def test_update_user_success(create_user_model: tuple[User, dict], db_session: S
     NEW_LAST_NAME = "new_last_name"
 
     user, expected = create_user_model
-    assert user is not None
-    assert user.password == expected["password"]
-    assert user.last_name == expected["last_name"]
+    assert user is not None, "User should not be None!"
+    assert (
+        user.password == expected["password"]
+    ), f"Acutal password \"{user.password}\" does not match with expected \"{expected['password']}\""
+    assert (
+        user.last_name == expected["last_name"]
+    ), f"Acutal last name \"{user.last_name}\" does not match with expected \"{expected['last_name']}\""
 
     expected["password"] = NEW_PASSWORD
     expected["last_name"] = NEW_LAST_NAME
+    LOG.debug(f"Updated expected data: {expected}")
 
     user.password = NEW_PASSWORD
     user.last_name = NEW_LAST_NAME
     db_session.commit()
     db_session.refresh(user)
+    LOG.debug(f"Commited changes and refresh database.")
 
     assert_user_properties(user, expected)
 
@@ -98,14 +108,15 @@ def test_delete_user_success(create_user_model: tuple[User, dict], db_session: S
         - User is not found in the database.
     """
     user, _ = create_user_model
-    assert user.id is not None
-    assert user.email is not None
+    assert user.id is not None, "User ID should not be None!"
+    assert user.email is not None, "User email should not be None!"
 
     db_session.delete(user)
     db_session.commit()
+    LOG.debug(f"Deleted user with ID: {user.id}")
 
     user = db_session.query(User).filter(User.id == user.id).first()
-    assert user is None
+    assert user is None, f"User with ID {user.id} should not be found in the database!"
 
 
 def test_create_and_retrieve_multiple_users_success(db_session: Session):
