@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from sqlalchemy.orm import Session
 
 from app.models import User
-from app.tests.utils import add_user_to_db
+from app.tests.utils import add_model_to_db
 from app.core.deps import get_current_user
 
 
@@ -22,7 +22,7 @@ def create_user_model(
     :param db_session: The database session.
     :return: A tuple containing the user model and its expected data.
     """
-    user = add_user_to_db(db_session, request.param)
+    user = add_model_to_db(db_session, User, request.param)
     return user, request.param
 
 

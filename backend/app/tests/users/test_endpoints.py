@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.crud import user as user_crud
 from app.models import User
 from app.tests import const
-from app.tests.utils import add_user_to_db
+from app.tests.utils import add_model_to_db
 
 
 LOG = logging.getLogger(__name__)
@@ -201,7 +201,7 @@ def test_update_user_success(client: TestClient, db_session: Session):
     Pass criteria:
         - The user data returned in the response and in the database matches the updated data.
     """
-    user = add_user_to_db(db_session, const.SAMPLE_USER_DATA[1])
+    user = add_model_to_db(db_session, User, const.SAMPLE_USER_DATA[1])
     payload = {
         "first_name": "new first name",
         "last_name": "new last name",
@@ -245,7 +245,7 @@ def test_read_users_success(client: TestClient, db_session: Session):
         - The user data in the response matches the users in the system.
     """
     for user in const.SAMPLE_USER_DATA[1:]:
-        add_user_to_db(db_session, user)
+        add_model_to_db(db_session, User, user)
     response = client.get(const.USER_URL)
     assert response.status_code == 200, response.text
     data = response.json()

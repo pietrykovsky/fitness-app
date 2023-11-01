@@ -5,7 +5,7 @@ from sqlalchemy.sql.expression import select
 
 from app.models import User
 from app.tests import const
-from app.tests.utils import assert_user_properties, add_user_to_db
+from app.tests.utils import assert_user_properties, add_model_to_db
 
 
 LOG = logging.getLogger(__name__)
@@ -137,7 +137,7 @@ def test_create_and_retrieve_multiple_users_success(db_session: Session):
         - All created users are successfully retrieved and their properties match the known data.
     """
     for user_data in const.SAMPLE_USER_DATA:
-        user = add_user_to_db(db_session, user_data)
+        user = add_model_to_db(db_session, User, user_data)
 
         retrieved_user = db_session.execute(
             select(User).filter(User.email == user_data["email"])
@@ -167,7 +167,7 @@ def test_add_user_with_the_same_email_fails(db_session: Session):
         The raised exception message contains "UNIQUE constraint failed: user.email".
     """
     user_data = const.SAMPLE_USER_DATA[0]
-    user = add_user_to_db(db_session, user_data)
+    user = add_model_to_db(db_session, User, user_data)
     assert user is not None
 
     user = User(**user_data)

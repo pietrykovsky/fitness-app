@@ -1,7 +1,7 @@
 import logging
-from typing import Any
 from sqlalchemy.orm import Session
 
+from app.core.database import Base
 from app.models import User
 
 
@@ -33,17 +33,17 @@ def assert_user_properties(user: User, expected: dict):
     assert user.create_date is not None, "User create date should not be None!"
 
 
-def add_user_to_db(db_session: Session, user_data: dict) -> User:
+def add_model_to_db(db_session: Session, model: Base, data: dict) -> Base:
     """
-    Add a user instance to the database and return it.
+    Add a model instance to the database and return it.
 
-    :param db_session: The database session to use for adding the user.
-    :param user_data: The data for the user to be added.
-    :return: The added user instance.
+    :param db_session: The database session to use for adding the model.
+    :param model: The model class to use for adding the model.
+    :param data: The data for the model to be added.
+    :return: The added model instance.
     """
-    user = User(**user_data)
-    db_session.add(user)
+    instance = model(**data)
+    db_session.add(instance)
     db_session.commit()
-    db_session.refresh(user)
-    LOG.debug(f"Added user to database: {user}")
-    return user
+    LOG.debug(f"Added model to database: {instance}")
+    return instance

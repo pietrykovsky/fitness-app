@@ -28,3 +28,30 @@ SAMPLE_USER_DATA = (
         "password": "ilikecreepypasta123",
     },
 )
+
+SAMPLE_CATEGORY_DATA = (
+    {"name": "chest"},
+    {"name": "back"},
+    {"name": "legs"},
+    {"name": "shoulders"},
+    {"name": "arms"},
+    {"name": "abs"},
+)
+
+SAMPLE_EXERCISE_DATA = (
+    {
+        "name": "bench press",
+        "description": "bench press description",
+        "category_id": 1,
+    },
+    {
+        "name": "pull ups",
+        "description": "pull ups description",
+        "category_id": 2,
+    },
+    {
+        "name": "squats",
+        "description": "squats description",
+        "category_id": 3,
+    },
+)

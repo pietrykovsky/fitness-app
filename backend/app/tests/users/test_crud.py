@@ -6,7 +6,7 @@ from app.crud import user as user_crud
 from app.models import User
 from app.schemas import UserCreate
 from app.tests import const
-from app.tests.utils import assert_user_properties, add_user_to_db
+from app.tests.utils import assert_user_properties, add_model_to_db
 from app.core.security import verify_password
 
 
@@ -187,7 +187,7 @@ def test_get_all_users(db_session: Session):
         - Number of retrieved users matches the number of created users.
     """
     for user_data in const.SAMPLE_USER_DATA:
-        add_user_to_db(db_session, user_data)
+        add_model_to_db(db_session, User, user_data)
     users = user_crud.get_multi(db_session)
     LOG.debug(f"Retrieved {len(users)} users from database.")
     LOG.debug(f"Users: {users}")
