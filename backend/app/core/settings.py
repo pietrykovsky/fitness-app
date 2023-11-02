@@ -19,3 +19,12 @@ DB_PORT = os.getenv("POSTGRES_PORT")
 SECRET_KEY = os.getenv("SECRET_KEY", "secret")
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
 ALGORITHM = "HS256"
+
+CORS_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:8000",
+    "http://0.0.0.0:3000",
+    "http://0.0.0.0:8000",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:8000",
+]
